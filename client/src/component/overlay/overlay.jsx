@@ -8,6 +8,7 @@ const Overlay = ({
     channel,
     userId,
     globalName,
+    participant,
     cost,
     type,
     ability,
@@ -61,6 +62,7 @@ const Overlay = ({
                 <ResultScreen
                     channel={channel}
                     userId={userId}
+                    participant={participant}
                     cost={cost}
                     type={type}
                     ability={ability}
@@ -213,7 +215,7 @@ const SubmissionList = ({channel, userId, globalName, submissions, isVote=true})
     );
 }
 
-const ResultScreen = ({channel, userId, cost, type, ability, color, submissions, votes, isVoted, isWolf, isWon, deleteCallback}) => {
+const ResultScreen = ({channel, userId, participant, cost, type, ability, color, submissions, votes, isVoted, isWolf, isWon, deleteCallback}) => {
     const postEndGame = async () => {
         const response = await fetch(
             `/api/end?channel=${channel}&userId=${userId}`,
@@ -229,6 +231,7 @@ const ResultScreen = ({channel, userId, cost, type, ability, color, submissions,
         <div className="screen-background">
             <ResultPane
             votes={votes}
+            participant={participant}
             isVoted={isVoted}
             isWolf={isWolf}
             isWon={isWon}
@@ -257,24 +260,39 @@ const ResultScreen = ({channel, userId, cost, type, ability, color, submissions,
     );
 }
 
-const ResultPane = ({votes, isVoted, isWolf, isWon}) => {
+const ResultPane = ({votes, participant, isWolf, isWon}) => {
+    console.log("votes : ", votes);
+    console.log("Object.keys(votes) : ", Object.keys(votes));
+    console.log("participant: ", participant);
     return(
-        <div className="screen-bakground">
+        <div className="screen-background">
             <h1>あなたは {isWon ? "勝利" : "敗北"} しました</h1>
             <h3>あなたの役職 : {isWolf ? "人狼" : "村人"}</h3>
 
             <h3>投票結果</h3>
             {
                 Object.keys(votes).map((value, index) => (
-                    <li>{value.globalName}に投票した人 : {getVotedUserIdStr(votes[value.id])}</li>
+                    <li>{getGlobalNameFromId(participant, value)}に投票した人 : {getVotedUserName(votes[value])}</li>
                 ))
             }
         </div>
     );
 };
 
-const getVotedUserIdStr = (array) => {
-    var name_str = "";
+const getGlobalNameFromId = (participant, id) => {
+    var global_name = "";
+    participant.map((value) => {
+        if(value.id == id)
+        {
+            global_name = value.globalName;
+        }
+    });
+
+    return global_name;
+}
+
+const getVotedUserName = (array) => {
+    var name_str = array.length == 0 ? "いない" : "";
     array.map((value, index) => {
         name_str += value.globalName + ", ";
     });

@@ -23,6 +23,7 @@ const port = 3000;
 
 // 各チャンネルの状態
 const channels = {};
+const channelUsers = {};
 const channelGameStarted = {};
 const channelWolfIndex = {};
 const channelReadyStatus = {};
@@ -92,6 +93,8 @@ app.post("/api/start", (req, res) => {
     console.log("vil_number : ", vil_number);
     console.log("wolf_number : ", wolf_number);
     let count = 0;
+
+    // ユーザーID : globalNameの辞書を作成する
     for(const ws of channels[channel])
     {
       const payload = JSON.stringify({
@@ -205,6 +208,10 @@ app.post("/api/vote", (req, res) => {
 
   if(voted_user_length == channels[channel].size)
   {
+    const maxLength = Math.max(
+      ...Object.values(channelVote[channel]).map(arr => arr.length)
+    );
+
     const votedUsers = Object.entries(channelVote[channel])
       .filter(([_, arr]) => arr.length === maxLength)
       .map(([key]) => key);
@@ -302,6 +309,7 @@ wss.on("connection", (ws, req) => {
   // 入力されたチャンネルが存在しないなら、そのチャンネル用のsetを追加する
   if (!channels[channel]) {
     channels[channel] = new Set();
+    channelUsers[channel] = {};
 
     // 最初に接続しに来た人の時点で、スタートゲーム開始状態を初期化しておく
     channelGameStarted[channel] = false;
@@ -311,6 +319,7 @@ wss.on("connection", (ws, req) => {
   ws.userId = userId;
   ws.globalName = globalName;
   channels[channel].add(ws);
+  channelUsers[channel][userId] = globalName;
   console.log(`Client(ID : ${ws.userId}) connected to channel: ${channel}`);
 
   // const intervalId = setInterval(() => {
@@ -352,6 +361,7 @@ wss.on("connection", (ws, req) => {
     channels[channel].delete(ws);
     if (channels[channel].size === 0) {
       delete channels[channel];
+      delete channelUsers[channel];
       delete channelGameStarted[channel];
       delete channelWolfIndex[channel];
       delete channelReadyStatus[channel];

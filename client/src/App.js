@@ -7,7 +7,6 @@ import useWebSocket from "./component/common/useWebSocket";
 import "./App.css";
 
 export default function App() {
-  const [channelName, setChannelName] = useState("");
   const [auth, setAuth] = useState(null);
   const [yourName, setYourName] = useState("");
   const [authMessage, setAuthMessage] = useState("not auth");
@@ -33,7 +32,12 @@ export default function App() {
       let current_participants = [];
       for(const part of participants.participants)
       {
-        current_participants.push(part.global_name);
+        current_participants.push(
+          {
+            id: part.id,
+            globalName: part.global_name
+          }
+        );
       }
       setParticipant(current_participants);
     }
@@ -121,7 +125,7 @@ export default function App() {
       <h3>あなたの名前 : {yourName}</h3>
       <h2>参加者一覧</h2>
       { participant?.map((value, index) => (
-        <li key={index}>{value}</li>
+        <li key={index}>{value.globalName}</li>
       ))}
       <button
         className="test-button"
@@ -137,6 +141,7 @@ export default function App() {
           channel={discordSdk.channelId}
           userId={auth?.user?.id}
           globalName={auth?.user?.global_name}
+          participant={participant}
           cost={vilNumber}
           type={cardType}
           ability={cardAbility}
