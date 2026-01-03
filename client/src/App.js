@@ -5,7 +5,6 @@ import { GAME_STATUS } from "./component/common/constants";
 import useWebSocket from "./component/common/useWebSocket";
 
 import "./App.css";
-import jess from "./Jess.jpg";
 
 export default function App() {
   const [channelName, setChannelName] = useState("");
@@ -15,7 +14,7 @@ export default function App() {
   const [participant, setParticipant] = useState([]);
   const [debugStr, setDebugStr] = useState("");
   const [isOverlay, setIsOverlay] = useState(false);
-  const [socket , addSocket] = useWebSocket({userId: auth?.user?.id});
+  const [socket , addSocket] = useWebSocket({userId: auth?.user?.id, globalName: auth?.user?.global_name});
   const [vilNumber, setVilNumber] = useState(-1);
   const [cardType, setCardType] = useState("");
   const [cardAbility, setCardAbility] = useState("");
@@ -137,6 +136,7 @@ export default function App() {
           gameStatus={gameStatus}
           channel={discordSdk.channelId}
           userId={auth?.user?.id}
+          globalName={auth?.user?.global_name}
           cost={vilNumber}
           type={cardType}
           ability={cardAbility}

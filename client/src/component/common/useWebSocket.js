@@ -2,8 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import ReconnectingWebSocket from "reconnecting-websocket";
 import discordSdk from "./Discord";
 
-const useWebSocket = ({userId}) => {
-  const url = `/api/ws?channel=${discordSdk.channelId}&userId=${userId}`;
+const useWebSocket = ({userId, globalName}) => {
+  const url = `/api/ws?channel=${discordSdk.channelId}&userId=${userId}&globalName=${globalName}`;
 
   const [socketPull, setSocketPull] = useState(null);
   const [socketPush, setSocketPush] = useState(null);

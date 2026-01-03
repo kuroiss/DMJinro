@@ -7,6 +7,7 @@ const Overlay = ({
     gameStatus,
     channel,
     userId,
+    globalName,
     cost,
     type,
     ability,
@@ -37,6 +38,7 @@ const Overlay = ({
                 <WriteScreen
                     channel={channel}
                     userId={userId}
+                    globalName={globalName}
                     cost={cost}
                     type={type}
                     ability={ability}
@@ -47,6 +49,7 @@ const Overlay = ({
                 <VoteScreen
                     channel={channel}
                     userId={userId}
+                    globalName={globalName}
                     cost={cost}
                     type={type}
                     ability={ability}
@@ -108,14 +111,14 @@ const StartScreen = ({channel, userId, cost, type, ability, color}) => {
     );
 };
 
-const WriteScreen = ({channel, userId, cost, type, ability, color}) => {
+const WriteScreen = ({channel, userId, globalName, cost, type, ability, color}) => {
     const [submitted, setSubmitted] = useState(false);
 
     const postSubmission = async () => {
         const element = document.getElementById("submission");
 
         const response = await fetch(
-            `/api/submission?channel=${channel}&userId=${userId}`,
+            `/api/submission?channel=${channel}&userId=${userId}&globalName=${globalName}`,
             {
                 method: "POST",
                 headers: {
@@ -153,7 +156,7 @@ const WriteScreen = ({channel, userId, cost, type, ability, color}) => {
     );
 }
 
-const VoteScreen = ({channel, userId, cost, type, ability, color, submissions}) => {
+const VoteScreen = ({channel, userId, globalName, cost, type, ability, color, submissions}) => {
     return (
         <div className="screen-background">
             <h4>コスト : {cost}</h4>
@@ -164,15 +167,16 @@ const VoteScreen = ({channel, userId, cost, type, ability, color, submissions}) 
             <SubmissionList
             channel={channel}
             userId={userId}
+            globalName={globalName}
             submissions={submissions}/>
         </div>
     );
 }
 
-const SubmissionList = ({channel, userId, submissions, isVote=true}) => {
+const SubmissionList = ({channel, userId, globalName, submissions, isVote=true}) => {
     const postVote = async (id) => {
         const response = await fetch(
-            `/api/vote?channel=${channel}&userId=${userId}`,
+            `/api/vote?channel=${channel}&userId=${userId}&globalName=${globalName}`,
             {
                 method: "POST",
                 headers: {
@@ -187,8 +191,13 @@ const SubmissionList = ({channel, userId, submissions, isVote=true}) => {
         <div className="screen-background">
         {
             Object.entries(submissions).map(([id, submission], index) => (
-                <div className="candidate-container">
-                    <li className="overlay-text">{id} : {submission}</li>
+                <div className="vote-container">
+                    <div className="candidate-container">
+                        <li className="overlay-text">{submission.globalName}</li>
+                        <div className="candidate-text">
+                            {submission.submission}
+                        </div>
+                    </div>
                     {isVote &&
                         <button
                         className="overlay-button"
@@ -256,8 +265,8 @@ const ResultPane = ({votes, isVoted, isWolf, isWon}) => {
 
             <h3>投票結果</h3>
             {
-                Object.keys(votes).map((id, index) => (
-                    <li>{id}に投票した人 : {getVotedUserIdStr(votes[id])}</li>
+                Object.keys(votes).map((value, index) => (
+                    <li>{value.globalName}に投票した人 : {getVotedUserIdStr(votes[value.id])}</li>
                 ))
             }
         </div>
@@ -265,10 +274,10 @@ const ResultPane = ({votes, isVoted, isWolf, isWon}) => {
 };
 
 const getVotedUserIdStr = (array) => {
-    var user_id_str = "";
+    var name_str = "";
     array.map((value, index) => {
-        user_id_str += value + ", ";
+        name_str += value.globalName + ", ";
     });
 
-    return user_id_str;
+    return name_str;
 }

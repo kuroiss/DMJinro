@@ -140,7 +140,7 @@ app.post("/api/write_start", (req, res) => {
 
 
 app.post("/api/submission", (req, res) => {
-  const {channel, userId} = req.query;
+  const {channel, userId, globalName} = req.query;
   console.log(`called /api/submission API from ${channel}.${userId}`);
 
   if (!channel || !channels[channel] || !channelGameStarted[channel]) {
@@ -151,7 +151,10 @@ app.post("/api/submission", (req, res) => {
   {
     channelSubmission[channel] = {};
   }
-  channelSubmission[channel][userId] = req.body;
+  channelSubmission[channel][userId] = {
+    globalName: globalName,
+    submission: req.body
+  };
 
   console.log("channelSubmission[channel]: ", channelSubmission[channel]);
 
@@ -173,7 +176,7 @@ app.post("/api/submission", (req, res) => {
 });
 
 app.post("/api/vote", (req, res) => {
-  const {channel, userId} = req.query;
+  const {channel, userId, globalName} = req.query;
   console.log(`called /api/vote API from ${channel}.${userId}`);
 
   if (!channel || !channels[channel] || !channelGameStarted[channel]) {
@@ -188,7 +191,12 @@ app.post("/api/vote", (req, res) => {
     });
   }
   const vote_user_id = req.body;
-  channelVote[channel][vote_user_id].push(userId);
+  channelVote[channel][vote_user_id].push(
+    {
+      userId: userId,
+      globalName: globalName
+    }
+  );
 
   var voted_user_length = 0;
   Object.keys(channelVote[channel]).map((key) => {
@@ -197,13 +205,18 @@ app.post("/api/vote", (req, res) => {
 
   if(voted_user_length == channels[channel].size)
   {
-    const votedUser = Object.entries(channelVote[channel]).reduce(
-      (max, [key, arr]) =>
-        arr.length > max.length
-          ? { key, length: arr.length }
-          : max,
-      { key: null, length: -1 }
-    );
+    const votedUsers = Object.entries(channelVote[channel])
+      .filter(([_, arr]) => arr.length === maxLength)
+      .map(([key]) => key);
+    const votedUser = votedUsers.length > 1 ? null : votedUsers[0];
+
+    // const votedUser = Object.entries(channelVote[channel]).reduce(
+    //   (max, [key, arr]) =>
+    //     arr.length > max.length
+    //       ? { key, length: arr.length }
+    //       : max,
+    //   { key: null, length: -1 }
+    // );
 
     var isWolfWon = false;
     var count = 0;
@@ -212,7 +225,7 @@ app.post("/api/vote", (req, res) => {
       const isWolf = count == channelWolfIndex[channel];
       if(isWolf)
       {
-        if(ws.userId != votedUser)
+        if(ws.userId != votedUser || votedUsers == null)
         {
           isWolfWon = true;
         }
@@ -278,6 +291,7 @@ wss.on("connection", (ws, req) => {
   const urlParams = new URLSearchParams(req.url?.split("?")[1]);
   const channel = urlParams.get("channel");
   const userId = urlParams.get("userId");
+  const globalName = urlParams.get("globalName");
 
   // クエリにchannelがなければ、その接続を維持しない
   if (!channel) {
@@ -295,6 +309,7 @@ wss.on("connection", (ws, req) => {
 
   // 該当するチャンネルに、WebSocketインスタンスを保持する
   ws.userId = userId;
+  ws.globalName = globalName;
   channels[channel].add(ws);
   console.log(`Client(ID : ${ws.userId}) connected to channel: ${channel}`);
 
