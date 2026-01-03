@@ -1,0 +1,45 @@
+.overlay-background{
+    position: fixed;
+    inset: 0;
+    background-color: #282c34;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow-y: auto;
+    overflow-x: auto;
+    z-index: 1000;
+}
+
+.overlay-button{
+    width: 150px;
+    height: 50px;
+}
+
+.overlay-text{
+    color: palegoldenrod;
+    font-size: 20px;
+}
+
+.screen-background{
+    background-color: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.screen-text-box{
+    background-color: whitesmoke;
+    color: black;
+    width: 400px;
+    height: 200px;
+    white-space: pre-wrap;
+}
+
+.candidate-container{
+    display: flex;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: space-between;
+}
